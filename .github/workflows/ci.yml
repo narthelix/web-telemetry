@@ -1,0 +1,75 @@
+# Contract: handbook engineering/pipelines.md.
+#
+# Bu repo bir UYGULAMA degil, bir KUTUPHANE -- o yuzden narthelix/.github'daki
+# `react-app-ci` reusable workflow'u kullanilmiyor: o build edip GHCR'a imaj
+# basiyor, burada uretilen sey bir npm paketi.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, ARM64, israel]
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  publish:
+    # Yalnizca `v*` etiketiyle. Surum `package.json`'dan okunur; etiket onu
+    # tetikler, degistirmez -- ikisi ayrisirsa npm zaten reddeder.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: [self-hosted, linux, ARM64, israel]
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # GitHub Packages'a yazmak icin gereken tek yetki. Ayri bir PAT YOK:
+      # `GITHUB_TOKEN` bu repo icin yeterli, ve org disina hicbir sey acmiyor.
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          # setup-node bunu gorunce ~/.npmrc'yi yaziyor; elle .npmrc
+          # commit'lemek gerekmiyor ve gerekmemeli (token oraya sizardi).
+          registry-url: https://npm.pkg.github.com
+          scope: "@narthelix"
+      - run: npm ci --no-audit --no-fund
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  pr-conventions:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: narthelix/.github/.github/workflows/pr-conventions.yml@main
+    with:
+      # Issue'lar narthelix/muznara'nin tracker'inda; dal adi numarayi tasiyor,
+      # gövde onu kirik bir referans uretmeden baglayamaz.
+      require_issue_link: false
+
+  secret-scan:
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: narthelix/.github/.github/workflows/secret-scan.yml@main

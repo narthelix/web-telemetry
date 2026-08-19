@@ -112,6 +112,15 @@ export function initWebTelemetry(options: WebTelemetryOptions): void {
     return;
   }
 
+  // YAPILANDIRMA YOKSA SESSIZCE KAPALI. Bu, fail-open'in konfigurasyon
+  // tarafindaki karsiligi: cluster'da ConfigMap/Secret `optional: true` ile
+  // baglaniyor, yani biri eksikse pod YINE DE ACILIYOR ve buraya bos string
+  // geliyor. O durumda Faro'yu bos bir URL'le baslatmak, her sayfa yuklemesinde
+  // basarisiz istek uretmekten baska bir sey yapmaz.
+  if (!options.collectorUrl || !options.apiKey) {
+    return;
+  }
+
   // FAIL-OPEN (ADR-0054 §3): telemetri hicbir kosulda uygulamayi dusurmez,
   // acilisi bloklamaz, bir surumu geciktirmez. Ayni durus ADR-0006'nin
   // Collector yokken tracing'i kapali birakmasinda da vardi.

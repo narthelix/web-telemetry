@@ -1,6 +1,6 @@
 {
   "name": "@narthelix/web-telemetry",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Faro Web SDK sarmalayicisi — narthelix web yuzeylerinin istemci telemetrisi",
   "license": "UNLICENSED",
   "private": false,
@@ -13,7 +13,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
@@ -21,7 +23,9 @@
     "type": "git",
     "url": "git+https://github.com/narthelix/web-telemetry.git"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",

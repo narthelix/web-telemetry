@@ -113,6 +113,19 @@ describe('initWebTelemetry', () => {
     expect(instrumentationNames()).toContain('console');
   });
 
+  it('collectorUrl ya da apiKey bossa hicbir sey yapmaz', () => {
+    // Cluster'da ConfigMap/Secret `optional: true` ile baglaniyor: biri
+    // eksikse pod yine de aciliyor ve buraya bos string geliyor. Faro'yu bos
+    // bir URL'le baslatmak her sayfa yuklemesinde basarisiz istek uretirdi.
+    withWindow(() => {
+      initWebTelemetry({ ...OPTIONS, collectorUrl: '' });
+      __resetForTests();
+      initWebTelemetry({ ...OPTIONS, apiKey: '' });
+    });
+
+    expect(initializeFaro).not.toHaveBeenCalled();
+  });
+
   it('uygulama kimligini oldugu gibi gecirir', () => {
     // appName her yuzeyde FARKLI olmali: receiver'in rate limit'i `per_app`
     // stratejisiyle bu ada bakiyor, anahtara degil.

@@ -1,0 +1,1 @@
+Read [`AGENTS.md`](../AGENTS.md) at the repository root — one set of instructions for every AI agent working here, this one included. It points at the rules rather than restating them, so there is only ever one copy to correct.

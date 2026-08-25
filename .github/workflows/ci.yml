@@ -3,6 +3,21 @@
 # Bu repo bir UYGULAMA degil, bir KUTUPHANE -- o yuzden narthelix/.github'daki
 # `react-app-ci` reusable workflow'u kullanilmiyor: o build edip GHCR'a imaj
 # basiyor, burada uretilen sey bir npm paketi.
+#
+# ---------------------------------------------------------------------------
+# GITHUB-HOSTED RUNNER, self-hosted DEGIL -- ve bu bir tercih degil, bu repo
+# public oldugu icin zorunlu (narthelix/muznara#918).
+#
+# Org'un runner grubu `allows_public_repositories: false` tasiyor, yani public
+# bir repo o makineyi zaten alamaz: mevcut `[self-hosted, ...]` etiketiyle isler
+# sonsuza kadar kuyrukta beklerdi. Ayar da dogru ayar -- fork'tan acilan bir PR
+# `pull_request` icin workflow dosyasini PR'in kendi hâliyle kosturuyor, yani
+# `runs-on`'u degistirebiliyor; kalici bir runner'da bu, bir kez zehirlenip
+# sonraki isleri de kirletmek demek. O makine org'un geri kalan CI'ini da
+# kosturuyor.
+#
+# Public repolarda GitHub-hosted runner ucretsiz; bu is de bir kutuphanenin
+# build+test'i, ARM64'e bagli hicbir yani yok.
 name: ci
 
 on:
@@ -17,7 +32,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, ARM64, israel]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
@@ -36,7 +51,7 @@ jobs:
     # tetikler, degistirmez -- ikisi ayrisirsa npm zaten reddeder.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
-    runs-on: [self-hosted, linux, ARM64, israel]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read

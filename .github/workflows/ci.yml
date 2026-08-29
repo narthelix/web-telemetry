@@ -82,9 +82,16 @@ jobs:
       # Issue'lar narthelix/muznara'nin tracker'inda; dal adi numarayi tasiyor,
       # gövde onu kirik bir referans uretmeden baglayamaz.
       require_issue_link: false
+      # ACIKCA hosted (narthelix/muznara#1026): bu repo PUBLIC, org'un runner
+      # grubu public repolara bilerek kapali (#918) -- varsayilan self-hosted'a
+      # dondugunde bu is sonsuza kadar kuyrukta beklerdi. Public repoda hosted
+      # zaten ucretsiz.
+      runner: ubuntu-latest
 
   secret-scan:
     permissions:
       contents: read
       pull-requests: read
     uses: narthelix/.github/.github/workflows/secret-scan.yml@main
+    with:
+      runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)

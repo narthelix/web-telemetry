@@ -17,45 +17,22 @@ pointer to where the rule actually lives.
 3. **`specs/technical/build_state.md` in `narthelix/muznara`** — the ledger:
    where the work actually stands. Read it before choosing what to do next. If
    it and anything else disagree, the ledger wins.
+4. **`ways-of-working/agent_memory.md` in `narthelix/handbook`** — the distilled
+   facts carried between sessions (`narthelix/agent-memory`): where that
+   directory actually is, how to read the index, and how to write a fact back.
+   Read it before your first session on a machine.
 
-Those last two are **other repositories**. `narthelix/workspace` clones every
-org repo side by side, so from inside one of them they are `../handbook/` and
-`../muznara/`. Opening a single repo as your editor's folder puts them outside
-it — read them from the terminal, or open the workspace directory instead so
-that one session sees all of them.
+Those last three are **other repositories** (or, for the memory, a clone outside
+the workspace entirely). `narthelix/workspace` clones every org repo side by
+side, so from inside one of them they are `../handbook/` and `../muznara/`.
+Opening a single repo as your editor's folder puts them outside it — read them
+from the terminal, or open the workspace directory instead so that one session
+sees all of them.
 
-## The shared memory
-
-Distilled facts carried between sessions live in `narthelix/agent-memory`: one
-file per fact, `MEMORY.md` the index. It is **not inside this repo and not
-inside the workspace** — it is a clone under the user's home directory, at the
-workspace path with `/` replaced by `-`:
-
-```sh
-~/.claude/projects/-Users-<user>-Projects-narthelix/memory
-```
-
-Editors scope file access to the open folder, so reach it from the **terminal**:
-
-```sh
-MEM=~/.claude/projects/$(cd /path/to/narthelix && pwd | tr / -)/memory
-cat "$MEM/MEMORY.md"          # the index — one line per fact
-cat "$MEM/<name>.md"          # the fact itself
-```
-
-Three things about it that are not obvious:
-
-- **`MEMORY.md` is an index, not the memory.** Each line is a hook. Open the
-  file it points at before acting on that topic — the *why* and the trap are in
-  the file, never in the one-liner.
-- **A new or corrected fact is written, committed and pushed.** Same shape as
-  the existing files: frontmatter with `name` / `description` /
-  `metadata.type` (`user` | `feedback` | `project` | `reference`), the fact in
-  the body, `[[other-name]]` to link. Add one line to `MEMORY.md`. Then
-  `git commit -m 'chore(memory): …'` and push — straight to `main`, that repo
-  runs `secret-scan` and no `pr-conventions`. **Memory written only locally is
-  memory one machine has**, which is the failure this repo exists to prevent.
-- **It is distilled fact, not narrative.** Progress belongs in the ledger.
+Two things `agent_memory.md` will tell you that otherwise cost time to learn: the
+memory directory's path is **configured, never derived** — computing it from the
+working directory is wrong on some machines — and `MEMORY.md` is an *index*, so a
+one-line hook is never the fact itself.
 
 ## Handing work back
 
@@ -64,7 +41,8 @@ it is the ledger, the memory, and git. So, as you go rather than at the end:
 
 - **Update `build_state.md`** when something lands. An agent picking up next
   week reads it, not your transcript.
-- **Push memory facts** as above.
+- **Push memory facts**, per `agent_memory.md`. Memory written only locally is
+  memory one machine has.
 - **One PR per unit of work**, so the history is legible without you.
 
 ## Two gates that fail while looking correct

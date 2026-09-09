@@ -77,7 +77,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    uses: narthelix/.github/.github/workflows/pr-conventions.yml@main
+    uses: narthelix/ci-scripts/.github/workflows/pr-conventions.yml@v0.4.0
     with:
       # Issue'lar narthelix/muznara'nin tracker'inda; dal adi numarayi tasiyor,
       # gövde onu kirik bir referans uretmeden baglayamaz.
@@ -92,6 +92,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
-    uses: narthelix/.github/.github/workflows/secret-scan.yml@main
+    uses: narthelix/ci-scripts/.github/workflows/secret-scan.yml@v0.4.0
     with:
       runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)

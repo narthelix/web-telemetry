@@ -102,6 +102,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: narthelix/ci-scripts/.github/workflows/actions-lint.yml@0ea7cf4871b8bb8c2da72eafe375876382194389  # v0.7.0
+    uses: narthelix/ci-scripts/.github/workflows/actions-lint.yml@0a717515037d852cd64b91199fb148958e29990f  # v0.7.1
     with:
       runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)

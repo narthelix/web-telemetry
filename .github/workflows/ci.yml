@@ -95,3 +95,13 @@ jobs:
     uses: narthelix/ci-scripts/.github/workflows/secret-scan.yml@4c956655087857d20256c3f42bd6f2fa010d9877  # v0.4.0
     with:
       runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)
+
+  # GitHub Actions security lint (zizmor) — replaces SonarCloud's githubactions:*
+  # rules; only lines this PR adds can fail it (narthelix/muznara#1852).
+  actions-lint:
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: narthelix/ci-scripts/.github/workflows/actions-lint.yml@0ea7cf4871b8bb8c2da72eafe375876382194389  # v0.7.0
+    with:
+      runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)

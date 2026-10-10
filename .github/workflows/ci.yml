@@ -77,7 +77,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write  # risk:* label (ADR-0128)
-    uses: narthelix/ci-scripts/.github/workflows/pr-conventions.yml@dcb334bd2b075dabc85275e935643d19238d87bc  # v0.10.0
+    uses: narthelix/ci-scripts/.github/workflows/pr-conventions.yml@842f25f7d86d2480b462b17ae0baf0a19f0ed7fa  # v0.11.0
     secrets:
       merger_private_key: ${{ secrets.MERGER_APP_PRIVATE_KEY }}
     with:

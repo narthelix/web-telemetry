@@ -76,8 +76,8 @@ jobs:
     if: github.event_name == 'pull_request'
     permissions:
       contents: read
-      pull-requests: read
-    uses: narthelix/ci-scripts/.github/workflows/pr-conventions.yml@4c956655087857d20256c3f42bd6f2fa010d9877  # v0.4.0
+      pull-requests: write  # risk:* label (ADR-0128)
+    uses: narthelix/ci-scripts/.github/workflows/pr-conventions.yml@90e8e7c192087e93da9484fa261d4931faddf1a8  # v0.9.0
     with:
       # Issue'lar narthelix/muznara'nin tracker'inda; dal adi numarayi tasiyor,
       # gövde onu kirik bir referans uretmeden baglayamaz.

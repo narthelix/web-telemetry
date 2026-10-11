@@ -45,7 +45,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-
   publish:
     # Yalnizca `v*` etiketiyle. Surum `package.json`'dan okunur; etiket onu
     # tetikler, degistirmez -- ikisi ayrisirsa npm zaten reddeder.
@@ -71,40 +70,18 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  pr-conventions:
-    if: github.event_name == 'pull_request'
+  # Org genelindeki dört kapı tek işte (narthelix/ops#2050): pr-conventions,
+  # secret-scan, zizmor, repo-lint, sonra risk sınıfı. Kapı başına bir pod
+  # yerine PR başına bir pod; zorunlu kontrol `gates / gate` (org ruleset).
+  gates:
     permissions:
       contents: read
-      pull-requests: write  # risk:* label (ADR-0128)
-    uses: narthelix/ci-scripts/.github/workflows/pr-conventions.yml@842f25f7d86d2480b462b17ae0baf0a19f0ed7fa  # v0.11.0
+      pull-requests: write  # risk:* etiketi + reviewdog yorumları
+    uses: narthelix/ci-scripts/.github/workflows/gates.yml@f83a93476b6f4efc792ccb86470ff6e11eb61bdf  # v0.12.0
     secrets:
       merger_private_key: ${{ secrets.MERGER_APP_PRIVATE_KEY }}
     with:
-      merger_client_id: ${{ vars.MERGER_CLIENT_ID }}
-      # Issue'lar narthelix/muznara'nin tracker'inda; dal adi numarayi tasiyor,
-      # gövde onu kirik bir referans uretmeden baglayamaz.
-      require_issue_link: false
-      # ACIKCA hosted (narthelix/muznara#1026): bu repo PUBLIC, org'un runner
-      # grubu public repolara bilerek kapali (#918) -- varsayilan self-hosted'a
-      # dondugunde bu is sonsuza kadar kuyrukta beklerdi. Public repoda hosted
-      # zaten ucretsiz.
+      # Runner etiketi cagiranda kalir: ci-scripts PUBLIC, varsayilan tasiyamaz (ADR-0099).
       runner: ubuntu-latest
-
-  secret-scan:
-    permissions:
-      contents: read
-      pull-requests: read
-    uses: narthelix/ci-scripts/.github/workflows/secret-scan.yml@4c956655087857d20256c3f42bd6f2fa010d9877  # v0.4.0
-    with:
-      runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)
-
-  # GitHub Actions security lint (zizmor) — replaces SonarCloud's githubactions:*
-  # rules; only lines this PR adds can fail it (narthelix/muznara#1852).
-  actions-lint:
-    permissions:
-      contents: read
-      pull-requests: write
-    uses: narthelix/ci-scripts/.github/workflows/actions-lint.yml@25c820b00cfa614f27846869eff2b463368c3f6a  # v0.8.1
-    with:
-      runner: ubuntu-latest  # gerekce yukaridaki pr-conventions cagrisinda (#1026)
+      merger_client_id: ${{ vars.MERGER_CLIENT_ID }}
+      require_issue_link: false

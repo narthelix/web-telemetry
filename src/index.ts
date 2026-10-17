@@ -19,8 +19,12 @@ import {
   WebVitalsInstrumentation,
   ConsoleInstrumentation,
   UserActionInstrumentation,
+  BaseTransport,
+  VERSION,
+  getTransportBody,
   initializeFaro,
   type Instrumentation,
+  type TransportItem,
 } from '@grafana/faro-web-sdk';
 
 export interface WebTelemetryOptions {
@@ -35,15 +39,26 @@ export interface WebTelemetryOptions {
   appName: string;
   appVersion: string;
   environment: string;
-  /** Alloy `faro.receiver`'inin public ucu. */
-  collectorUrl: string;
+  /** Alloy `faro.receiver`'inin public ucu. `forward` verildiginde gerekmez. */
+  collectorUrl?: string;
   /**
    * Paylasilan app key. Tarayicida TANIM GEREGI gorunur — JS paketinin icinde
    * duruyor. Gizli bir sey degil: bir taramaci botu disarida tutar, kullanici
    * verisini korumaz. Gercek savunma receiver'in rate limiter'i ve ingest'in
    * yalnizca KABUL edip hicbir sorguya cevap vermemesi (ADR-0054 §2).
    */
-  apiKey: string;
+  apiKey?: string;
+  /**
+   * Paketi tarayicinin fetch'iyle DEGIL, bu fonksiyonla gonder. Govde Faro'nun
+   * kendi JSON'u (`getTransportBody`), alicinin bekledigi bicimde; adres ve
+   * anahtar gonderen tarafta. Verildiginde `collectorUrl`/`apiKey` kullanilmaz.
+   *
+   * Neden: Electron renderer'i `file://`'dan acilir, kokeni `null` -- alicinin
+   * CORS listesine yazilamaz. Govde IPC ile ana surece gider, ana surec CORS'suz
+   * gonderir (narthelix/ops#2115). Enstrumantasyon ve gizlilik varsayilanlari
+   * yine bu paketin: masaustu onlari kopyalamaz.
+   */
+  forward?: (body: string) => void;
   /**
    * Kullanici etkilesimlerini yakala. VARSAYILAN KAPALI, ve bu bilincli:
    * Faro'nun user-action enstrümantasyonu tiklanan elemanin GORUNEN METNINI
@@ -95,6 +110,24 @@ function buildInstrumentations(options: WebTelemetryOptions): Instrumentation[] 
   return instrumentations;
 }
 
+/** Faro'nun paketini `forward`'a verir; agla ugrasan gonderen taraf. */
+class ForwardingTransport extends BaseTransport {
+  readonly name = '@narthelix/web-telemetry:forward';
+  readonly version = VERSION;
+
+  constructor(private readonly forward: (body: string) => void) {
+    super();
+  }
+
+  send(items: TransportItem | TransportItem[]): void {
+    try {
+      this.forward(JSON.stringify(getTransportBody(Array.isArray(items) ? items : [items])));
+    } catch {
+      // Fail-open (ADR-0054 §3): kaybolan bir paket uygulamayi dusurmez.
+    }
+  }
+}
+
 /**
  * Telemetriyi baslatir. Tarayici disinda ve hata durumunda SESSIZCE hicbir sey
  * yapmaz.
@@ -117,7 +150,7 @@ export function initWebTelemetry(options: WebTelemetryOptions): void {
   // baglaniyor, yani biri eksikse pod YINE DE ACILIYOR ve buraya bos string
   // geliyor. O durumda Faro'yu bos bir URL'le baslatmak, her sayfa yuklemesinde
   // basarisiz istek uretmekten baska bir sey yapmaz.
-  if (!options.collectorUrl || !options.apiKey) {
+  if (!options.forward && (!options.collectorUrl || !options.apiKey)) {
     return;
   }
 
@@ -126,8 +159,9 @@ export function initWebTelemetry(options: WebTelemetryOptions): void {
   // Collector yokken tracing'i kapali birakmasinda da vardi.
   try {
     initializeFaro({
-      url: options.collectorUrl,
-      apiKey: options.apiKey,
+      ...(options.forward
+        ? { transports: [new ForwardingTransport(options.forward)] }
+        : { url: options.collectorUrl, apiKey: options.apiKey }),
       app: {
         name: options.appName,
         version: options.appVersion,

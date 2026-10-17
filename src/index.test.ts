@@ -21,6 +21,9 @@ vi.mock('@grafana/faro-web-sdk', () => {
     NavigationInstrumentation: class extends Named { constructor() { super('navigation'); } },
     UserActionInstrumentation: class extends Named { constructor() { super('user-action'); } },
     ConsoleInstrumentation: class extends Named { constructor() { super('console'); } },
+    BaseTransport: class {},
+    VERSION: 'test',
+    getTransportBody: (items: { payload: unknown }[]) => ({ meta: {}, events: items.map((i) => i.payload) }),
   };
 });
 
@@ -138,5 +141,31 @@ describe('initWebTelemetry', () => {
         app: { name: 'muznara-website', version: '1.2.3', environment: 'production' },
       }),
     );
+  });
+
+  it('forward verildiginde adres/anahtar istemez, paketi ona verir', () => {
+    // Electron renderer'i `file://`'dan acilir (koken `null`): paket IPC ile
+    // ana surece gider (narthelix/ops#2115).
+    const sent: string[] = [];
+    withWindow(() =>
+      initWebTelemetry({ appName: 'muznara-desktop', appVersion: '0.2.0', environment: 'production', forward: (b) => sent.push(b) }),
+    );
+
+    const config = initializeFaro.mock.calls[0]?.[0] as { url?: string; transports: { send: (i: unknown) => void }[] };
+    expect(config.url).toBeUndefined();
+    expect(config.transports).toHaveLength(1);
+    config.transports[0]!.send({ payload: { name: 'x' } });
+    expect(JSON.parse(sent[0]!)).toEqual({ meta: {}, events: [{ name: 'x' }] });
+    // Gizlilik varsayilanlari yine bu paketin.
+    expect(instrumentationNames()).not.toContain('user-action');
+    expect(instrumentationNames()).not.toContain('console');
+  });
+
+  it('forward patlarsa hata firlatmaz', () => {
+    withWindow(() =>
+      initWebTelemetry({ appName: 'a', appVersion: '1', environment: 'p', forward: () => { throw new Error('ipc'); } }),
+    );
+    const config = initializeFaro.mock.calls[0]?.[0] as { transports: { send: (i: unknown) => void }[] };
+    expect(() => config.transports[0]!.send({ payload: {} })).not.toThrow();
   });
 });

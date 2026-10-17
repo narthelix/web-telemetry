@@ -54,6 +54,14 @@ export function Telemetry() {
 
 Receiver tek bir paylaşılan `api_key` kabul ediyor, yani anahtar başına ayrım yapılamıyor. Ama rate limit `strategy = "per_app"` ile çalışıyor ve **uygulama adına** bakıyor: farklı adlar = bağımsız limitler. İki uygulamaya aynı adı vermek onları aynı kovaya sokar.
 
+### `forward`: tarayıcının fetch'i olmadan
+
+Electron renderer'ı `file://`'dan açılır, kökeni `null` — alıcının CORS listesine yazılamaz. `forward` verildiğinde paket kendisi göndermez; Faro'nun JSON gövdesini bu fonksiyona verir, `collectorUrl`/`apiKey` gerekmez. Gönderen taraf (masaüstünde ana süreç) gövdeyi alıcıya `x-api-key` ile POST'lar (narthelix/ops#2115). Enstrümantasyon ve aşağıdaki varsayılanlar yine bu paketin.
+
+```ts
+initWebTelemetry({ appName: 'muznara-desktop', appVersion, environment, forward: (body) => window.muznara.telemetry(body) });
+```
+
 ## Varsayılan olarak kapalı olanlar
 
 | Seçenek | Varsayılan | Neden |

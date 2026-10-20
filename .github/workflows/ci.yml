@@ -45,6 +45,12 @@ jobs:
       - run: npm run typecheck
       # Coverage floor (narthelix/ops#2089 T15); `npm test` stays the developer\'s, floor-free.
       - run: npm run test:coverage
+      # Changed-lines coverage on a PR: report only (narthelix/ops#2089 T15).
+      - name: changed-lines coverage
+        if: github.event_name == 'pull_request'
+        uses: narthelix/ci-scripts/actions/diff-coverage@a49c394187c5fe659c9f4dd91c5cdf0b9979d85f  # v0.14.2
+        with:
+          report: coverage/lcov.info
       - run: npm run build
   publish:
     # Yalnizca `v*` etiketiyle. Surum `package.json`'dan okunur; etiket onu

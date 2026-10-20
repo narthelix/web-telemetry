@@ -43,7 +43,8 @@ jobs:
           node-version: 22
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
-      - run: npm test
+      # Coverage floor (narthelix/ops#2089 T15); `npm test` stays the developer\'s, floor-free.
+      - run: npm run test:coverage
       - run: npm run build
   publish:
     # Yalnizca `v*` etiketiyle. Surum `package.json`'dan okunur; etiket onu

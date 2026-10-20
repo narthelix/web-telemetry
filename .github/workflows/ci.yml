@@ -48,7 +48,7 @@ jobs:
       # Changed-lines coverage on a PR: report only (narthelix/ops#2089 T15).
       - name: changed-lines coverage
         if: github.event_name == 'pull_request'
-        uses: narthelix/ci-scripts/actions/diff-coverage@9217978ab1e4fe823be451f4ef7d5013d7d7ce5b  # v0.14.1
+        uses: narthelix/ci-scripts/actions/diff-coverage@a49c394187c5fe659c9f4dd91c5cdf0b9979d85f  # v0.14.2
         with:
           report: coverage/lcov.info
       - run: npm run build

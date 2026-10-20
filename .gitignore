@@ -14,3 +14,6 @@ dist/
 # macOS Finder artefakti. Global ~/.gitignore_global da var ama o MAKINEYE
 # bagli ve repoyla seyahat etmiyor; bu satir her katkiciyi kapsar.
 .DS_Store
+
+# vitest coverage report (narthelix/ops#2089 T15)
+coverage/
